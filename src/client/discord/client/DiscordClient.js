@@ -1,6 +1,6 @@
 import path from 'path';
 import Setting from '../../../db/model/setting.js';
-import Logger from '../../../component/logger.js';
+import Logger from '../../../component/Logger.js';
 import { readdir } from 'fs/promises';
 import { Client, Collection } from 'discord.js';
 import { REST } from '@discordjs/rest';

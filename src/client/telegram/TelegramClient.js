@@ -1,5 +1,5 @@
 import Setting from '../../db/model/setting.js';
-import Logger from '../../component/logger.js';
+import Logger from '../../component/Logger.js';
 import TeleBot from 'telebot';
 
 const log = new Logger('client.telegram');

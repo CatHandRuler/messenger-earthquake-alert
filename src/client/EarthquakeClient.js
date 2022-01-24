@@ -1,4 +1,4 @@
-import Logger from '../component/logger.js';
+import Logger from '../component/Logger.js';
 import DiscordClient from './discord/client/DiscordClient.js';
 import TelegramClient from './telegram/TelegramClient.js';
 import EventEmitter from 'events';
