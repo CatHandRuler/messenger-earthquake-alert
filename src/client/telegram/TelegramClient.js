@@ -1,23 +1,29 @@
-import TeleBot from 'telebot';
 import Setting from '../../db/model/setting.js';
+import Logger from '../../component/logger.js';
+import TeleBot from 'telebot';
+
+const log = new Logger('client.telegram');
 
 export default class TelegramClient extends TeleBot {
+  #id;
   constructor(options) {
     super(options.option);
-    this.id = options.id;
+
+    this.#id = options.id;
   }
 
   setup() {
-    this.setupEvents();
+    this.#setupEvents();
   }
 
-  setupEvents() {
+  #setupEvents() {
     this.on('/start', (msg) => {
       msg.reply.text('안녕하세요!');
     });
 
     this.on('newChatMembers', async (msg) => {
-      if (msg.new_chat_member.id != this.id) return;
+      if (msg.new_chat_member.id != this.#id) return;
+
       try {
         await Setting.create({
           platform: 'telegram',
@@ -26,27 +32,16 @@ export default class TelegramClient extends TeleBot {
         });
         msg.reply.text('안녕하세요! 이 봇을 추가해 주셔서 감사합니다!');
       } catch (e) {
-        console.log(
-          `${'-'.repeat(50)} ${new Date().toLocaleString('ko-KR')} ${'-'.repeat(
-            50
-          )}`
-        );
-        console.error(e);
+        log.error(e);
       }
     });
 
     this.on('leftChatMember', async (msg) => {
-      if (msg.left_chat_member.id != this.id) return;
+      if (msg.left_chat_member.id != this.#id) return;
+
       Setting.findOneAndDelete(
         { platform: 'telegram', channel_id: msg.chat.id },
-        (e) => {
-          console.log(
-            `${'-'.repeat(50)} ${new Date().toLocaleString(
-              'ko-KR'
-            )} ${'-'.repeat(50)}`
-          );
-          console.error(e);
-        }
+        log.error.bind(log)
       );
     });
   }
@@ -62,6 +57,7 @@ export default class TelegramClient extends TeleBot {
         minute: dateStr.substring(10, 12),
       },
     };
+
     Setting.find({ platform: 'telegram' }).then((chats) => {
       if (!chats) return;
       chats.forEach((chat) =>

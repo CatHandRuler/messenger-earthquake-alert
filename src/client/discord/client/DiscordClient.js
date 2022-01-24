@@ -1,29 +1,32 @@
+import path from 'path';
+import Setting from '../../../db/model/setting.js';
+import Logger from '../../../component/logger.js';
 import { readdir } from 'fs/promises';
 import { Client, Collection } from 'discord.js';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
-import path from 'path';
-import Setting from '../../../db/model/setting.js';
+
+const log = new Logger('client.discord');
 
 export default class DiscordClient extends Client {
+  #appID;
+  #commands;
+  #tokenSettedRest;
+
   constructor(options) {
     super(options.option);
     this.token = options.token;
-    this.appID = options.id;
-    this.commands = new Collection();
-    this.tokenSettedRest = new REST({ version: 9 }).setToken(this.token);
+    this.#appID = options.id;
+    this.#commands = new Collection();
+    this.#tokenSettedRest = new REST({ version: 9 }).setToken(this.token);
   }
 
   setup() {
-    this.setupCommands();
-    this.setupEvents();
+    this.#setupCommands();
+    this.#setupEvents();
   }
 
-  login() {
-    return super.login();
-  }
-
-  setupCommands() {
+  #setupCommands() {
     const cmdPath = path.join(
       path.resolve(),
       'src',
@@ -31,32 +34,19 @@ export default class DiscordClient extends Client {
       'discord',
       'command'
     );
+
     readdir(cmdPath)
       .then((fileNames) =>
         fileNames.forEach((fileName) =>
           import(`../command/${fileName}`)
-            .then((cmd) => this.commands.set(cmd.name, cmd))
-            .catch((e) => {
-              console.log(
-                `${'-'.repeat(50)} ${new Date().toLocaleString(
-                  'ko-KR'
-                )} ${'-'.repeat(50)}`
-              );
-              console.error(e);
-            })
+            .then((cmd) => this.#commands.set(cmd.name, cmd))
+            .catch(log.error.bind(log))
         )
       )
-      .catch((e) => {
-        console.log(
-          `${'-'.repeat(50)} ${new Date().toLocaleString('ko-KR')} ${'-'.repeat(
-            50
-          )}`
-        );
-        console.error(e);
-      });
+      .catch(log.error.bind(log));
   }
 
-  setupEvents() {
+  #setupEvents() {
     this.once('ready', (client) => {
       client.user.setActivity('Earthquake Alert', { type: 'LISTENING' });
       client.user.setStatus('online');
@@ -64,23 +54,16 @@ export default class DiscordClient extends Client {
         .fetch({ limit: 200 })
         .then((guildCollection) =>
           guildCollection.each((guild) =>
-            this.tokenSettedRest.put(
-              Routes.applicationGuildCommands(this.appID, guild.id),
+            this.#tokenSettedRest.put(
+              Routes.applicationGuildCommands(this.#appID, guild.id),
               {
-                body: this.commands.map((cmdModule) => cmdModule.slashBuilder),
+                body: this.#commands.map((cmdModule) => cmdModule.slashBuilder),
               }
             )
           )
         )
-        .catch((e) => {
-          console.log(
-            `${'-'.repeat(50)} ${new Date().toLocaleString(
-              'ko-KR'
-            )} ${'-'.repeat(50)}`
-          );
-          console.error(e);
-        });
-      console.log(`Logged in Discord as user ${client.user.tag}`);
+        .catch(log.error.bind(log));
+      log.info(`Logged in as client ${client.user.tag}`);
     });
 
     this.on('guildCreate', async (guild) => {
@@ -96,10 +79,10 @@ export default class DiscordClient extends Client {
             )
           )
         );
-        await this.tokenSettedRest.put(
-          Routes.applicationGuildCommands(this.appID, guild.id),
+        await this.#tokenSettedRest.put(
+          Routes.applicationGuildCommands(this.#appID, guild.id),
           {
-            body: this.commands.map((cmdModule) => cmdModule.slashBuilder),
+            body: this.#commands.map((cmdModule) => cmdModule.slashBuilder),
           }
         );
         await Setting.create({
@@ -109,33 +92,22 @@ export default class DiscordClient extends Client {
         });
         channel.send('안녕하세요! 이 봇을 추가해 주셔서 감사합니다!');
       } catch (e) {
-        console.log(
-          `${'-'.repeat(50)} ${new Date().toLocaleString('ko-KR')} ${'-'.repeat(
-            50
-          )}`
-        );
-        console.error(e);
+        log.error(e);
       }
     });
 
     this.on('guildDelete', (guild) =>
       Setting.findOneAndDelete(
         { platform: 'discord', guild_id: guild.id },
-        (err) => {
-          if (!err) return;
-          console.log(
-            `${'-'.repeat(50)} ${new Date().toLocaleString(
-              'ko-KR'
-            )} ${'-'.repeat(50)}`
-          );
-          console.error(err);
-        }
+        log.error.bind(log)
       )
     );
 
     this.on('interactionCreate', (interaction) => {
       if (!interaction.isCommand) return;
-      const command = this.commands.get(interaction.commandName);
+
+      const command = this.#commands.get(interaction.commandName);
+
       command.run(interaction, this);
     });
   }
@@ -151,6 +123,7 @@ export default class DiscordClient extends Client {
         minute: dateStr.substring(10, 12),
       },
     };
+
     Setting.find({ platform: 'discord' }).then((guilds) => {
       if (!guilds) return;
       guilds.forEach((guild) => {

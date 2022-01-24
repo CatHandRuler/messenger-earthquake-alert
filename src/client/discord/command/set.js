@@ -1,5 +1,5 @@
-import { SlashCommandBuilder } from '@discordjs/builders';
 import Setting from '../../../db/model/setting.js';
+import { SlashCommandBuilder } from '@discordjs/builders';
 
 const name = 'set';
 const description = 'Sets alert channel';

@@ -1,6 +1,8 @@
-import { Intents } from 'discord.js';
+import Logger from './src/component/logger.js';
 import EarthquakeClient from './src/client/EarthquakeClient.js';
+import { Intents } from 'discord.js';
 
+const log = new Logger('process');
 const client = new EarthquakeClient({
   discord: {
     option: { intents: [Intents.FLAGS.GUILDS] },
@@ -13,16 +15,12 @@ const client = new EarthquakeClient({
   },
   key: process.env.EARTHQUAKE_API_KEY,
 });
-console.log(
-  `${'-'.repeat(50)} ${new Date().toLocaleString('ko-KR')} ${'-'.repeat(50)}`
-);
+
+log.info('process start');
 client.setup();
 client.launch();
 
 process.on('uncaughtException', (e) => {
-  console.log(
-    `${'-'.repeat(50)} ${new Date().toLocaleString('ko-KR')} ${'-'.repeat(50)}`
-  );
-  console.error(e);
+  log.error(e);
   process.exit(1);
 });
