@@ -1,4 +1,4 @@
-import Logger from './src/component/logger.js';
+import Logger from './src/component/Logger.js';
 import EarthquakeClient from './src/client/EarthquakeClient.js';
 import { Intents } from 'discord.js';
 
