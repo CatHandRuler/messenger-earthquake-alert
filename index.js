@@ -14,6 +14,7 @@ const client = new EarthquakeClient({
     id: process.env.TELEGRAM_ID,
   },
   key: process.env.EARTHQUAKE_API_KEY,
+  databaseURL: process.env.DB_URL,
 });
 
 log.info('process start');

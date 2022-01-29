@@ -6,7 +6,6 @@ import mongoose from 'mongoose';
 import axios from 'axios';
 import { XMLParser } from 'fast-xml-parser';
 
-const DB_URL = 'mongodb://localhost:27017/db';
 const REQUEST_URL = 'http://apis.data.go.kr/1360000/EqkInfoService/getEqkMsg';
 
 const log = new Logger('client');
@@ -17,15 +16,17 @@ db.on('error', log.error.bind(log));
 
 export default class EarthquakeClient extends EventEmitter {
   #key;
+  #databaseURL;
   #discord;
   #telegram;
 
   constructor(option) {
-    const { discord, telegram, key } = option;
+    const { discord, telegram, key, databaseURL } = option;
 
     super();
 
     this.#key = key;
+    this.#databaseURL = databaseURL;
     this.#discord = new DiscordClient(discord);
     this.#telegram = new TelegramClient(telegram);
 
@@ -54,7 +55,7 @@ export default class EarthquakeClient extends EventEmitter {
   }
 
   setup() {
-    mongoose.connect(DB_URL);
+    mongoose.connect(this.#databaseURL);
     this.#setupEarthquakeEvents();
     this.#discord.setup();
     this.#telegram.setup();
