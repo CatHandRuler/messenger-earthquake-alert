@@ -8,3 +8,4 @@
 **/Dockerfile*
 **/node_modules
 README.md
+variable-file-example.env
