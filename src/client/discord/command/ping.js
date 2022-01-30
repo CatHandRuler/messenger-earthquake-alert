@@ -10,4 +10,6 @@ function run(interaction, client) {
   interaction.reply(`Client WebSocket ping: ${client.ws.ping}ms`);
 }
 
-export { name, description, slashBuilder, run };
+export {
+  name, description, slashBuilder, run,
+};

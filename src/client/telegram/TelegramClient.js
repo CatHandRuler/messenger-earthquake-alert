@@ -1,11 +1,12 @@
+import TeleBot from 'telebot';
 import Setting from '../../db/model/setting.js';
 import Logger from '../../component/Logger.js';
-import TeleBot from 'telebot';
 
 const log = new Logger('client.telegram');
 
 export default class TelegramClient extends TeleBot {
   #id;
+
   constructor(options) {
     super(options.option);
 
@@ -41,7 +42,7 @@ export default class TelegramClient extends TeleBot {
 
       Setting.findOneAndDelete(
         { platform: 'telegram', channel_id: msg.chat.id },
-        log.error.bind(log)
+        log.error.bind(log),
       );
     });
   }
@@ -60,22 +61,20 @@ export default class TelegramClient extends TeleBot {
 
     Setting.find({ platform: 'telegram' }).then((chats) => {
       if (!chats) return;
-      chats.forEach((chat) =>
-        this.sendMessage(
-          chat.channel_id,
-          `${formattedDateStr.year}년 ${formattedDateStr.month}월 ${
-            formattedDateStr.day
-          }일 ${formattedDateStr.time.hour}시 ${
-            formattedDateStr.time.minute
-          }분 발표된 지진정보입니다.\n\n진앙 깊이: ${
-            values.dep || '정보없음'
-          }km\n위치: ${values.loc || '정보없음'}\n규모: ${
-            values.mt || '정보없음'
-          }\n진도: ${values.inT || '정보없음'}\n참고사항: ${
-            values.rem || '정보없음'
-          }\n데이터는 기상청 공공 API에서 제공받았습니다.`
-        )
-      );
+      chats.forEach((chat) => this.sendMessage(
+        chat.channel_id,
+        `${formattedDateStr.year}년 ${formattedDateStr.month}월 ${
+          formattedDateStr.day
+        }일 ${formattedDateStr.time.hour}시 ${
+          formattedDateStr.time.minute
+        }분 발표된 지진정보입니다.\n\n진앙 깊이: ${
+          values.dep || '정보없음'
+        }km\n위치: ${values.loc || '정보없음'}\n규모: ${
+          values.mt || '정보없음'
+        }\n진도: ${values.inT || '정보없음'}\n참고사항: ${
+          values.rem || '정보없음'
+        }\n데이터는 기상청 공공 API에서 제공받았습니다.`,
+      ));
     });
   }
 }

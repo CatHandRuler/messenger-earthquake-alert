@@ -14,7 +14,7 @@ export default class Logger {
   }
 
   error(err) {
-    console.error(this.#format('error', err.message));
+    console.error(this.#format('error', err));
   }
 
   info(context) {

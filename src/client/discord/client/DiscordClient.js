@@ -1,16 +1,18 @@
 import path from 'path';
-import Setting from '../../../db/model/setting.js';
-import Logger from '../../../component/Logger.js';
 import { readdir } from 'fs/promises';
 import { Client, Collection } from 'discord.js';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
+import Logger from '../../../component/Logger.js';
+import Setting from '../../../db/model/setting.js';
 
 const log = new Logger('client.discord');
 
 export default class DiscordClient extends Client {
   #appID;
+
   #commands;
+
   #tokenSettedRest;
 
   constructor(options) {
@@ -32,17 +34,13 @@ export default class DiscordClient extends Client {
       'src',
       'client',
       'discord',
-      'command'
+      'command',
     );
 
     readdir(cmdPath)
-      .then((fileNames) =>
-        fileNames.forEach((fileName) =>
-          import(`../command/${fileName}`)
-            .then((cmd) => this.#commands.set(cmd.name, cmd))
-            .catch(log.error.bind(log))
-        )
-      )
+      .then((fileNames) => fileNames.forEach((fileName) => import(`../command/${fileName}`)
+        .then((cmd) => this.#commands.set(cmd.name, cmd))
+        .catch(log.error.bind(log))))
       .catch(log.error.bind(log));
   }
 
@@ -52,16 +50,12 @@ export default class DiscordClient extends Client {
       client.user.setStatus('online');
       this.guilds
         .fetch({ limit: 200 })
-        .then((guildCollection) =>
-          guildCollection.each((guild) =>
-            this.#tokenSettedRest.put(
-              Routes.applicationGuildCommands(this.#appID, guild.id),
-              {
-                body: this.#commands.map((cmdModule) => cmdModule.slashBuilder),
-              }
-            )
-          )
-        )
+        .then((guildCollection) => guildCollection.each((guild) => this.#tokenSettedRest.put(
+          Routes.applicationGuildCommands(this.#appID, guild.id),
+          {
+            body: this.#commands.map((cmdModule) => cmdModule.slashBuilder),
+          },
+        )))
         .catch(log.error.bind(log));
       log.info(`Logged in as client ${client.user.tag}`);
     });
@@ -69,21 +63,18 @@ export default class DiscordClient extends Client {
     this.on('guildCreate', async (guild) => {
       try {
         const channels = await (await guild.fetch()).channels.fetch();
-        const channel = await new Promise((resolve) =>
-          resolve(
-            channels.find(
-              (ch) =>
-                ch.type === 'GUILD_TEXT' &&
-                ch.viewable &&
-                ch.permissionsFor(guild.me).has('SEND_MESSAGES')
-            )
-          )
-        );
+        const channel = await new Promise((resolve) => resolve(
+          channels.find(
+            (ch) => ch.type === 'GUILD_TEXT'
+                && ch.viewable
+                && ch.permissionsFor(guild.me).has('SEND_MESSAGES'),
+          ),
+        ));
         await this.#tokenSettedRest.put(
           Routes.applicationGuildCommands(this.#appID, guild.id),
           {
             body: this.#commands.map((cmdModule) => cmdModule.slashBuilder),
-          }
+          },
         );
         await Setting.create({
           platform: 'discord',
@@ -96,12 +87,10 @@ export default class DiscordClient extends Client {
       }
     });
 
-    this.on('guildDelete', (guild) =>
-      Setting.findOneAndDelete(
-        { platform: 'discord', guild_id: guild.id },
-        log.error.bind(log)
-      )
-    );
+    this.on('guildDelete', (guild) => Setting.findOneAndDelete(
+      { platform: 'discord', guild_id: guild.id },
+      log.error.bind(log),
+    ));
 
     this.on('interactionCreate', (interaction) => {
       if (!interaction.isCommand) return;
@@ -128,7 +117,7 @@ export default class DiscordClient extends Client {
       if (!guilds) return;
       guilds.forEach((guild) => {
         const channel = this.channels.cache.find(
-          (ch) => ch.id === guild.channel_id
+          (ch) => ch.id === guild.channel_id,
         );
         if (!channel) return;
         channel.send(
@@ -142,7 +131,7 @@ export default class DiscordClient extends Client {
             values.mt || '정보없음'
           }\`\n진도: \`${values.inT || '정보없음'}\`\n참고사항: \`${
             values.rem || '정보없음'
-          }\`\n데이터는 기상청 공공 API에서 제공받았습니다.`
+          }\`\n데이터는 기상청 공공 API에서 제공받았습니다.`,
         );
       });
     });

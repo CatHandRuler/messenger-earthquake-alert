@@ -1,6 +1,6 @@
+import { Intents } from 'discord.js';
 import Logger from './src/component/Logger.js';
 import EarthquakeClient from './src/client/EarthquakeClient.js';
-import { Intents } from 'discord.js';
 
 const log = new Logger('process');
 const client = new EarthquakeClient({

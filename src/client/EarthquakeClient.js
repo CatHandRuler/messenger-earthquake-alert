@@ -1,10 +1,10 @@
-import Logger from '../component/Logger.js';
-import DiscordClient from './discord/client/DiscordClient.js';
-import TelegramClient from './telegram/TelegramClient.js';
 import EventEmitter from 'events';
 import mongoose from 'mongoose';
 import axios from 'axios';
 import { XMLParser } from 'fast-xml-parser';
+import TelegramClient from './telegram/TelegramClient.js';
+import DiscordClient from './discord/client/DiscordClient.js';
+import Logger from '../component/Logger.js';
 
 const REQUEST_URL = 'http://apis.data.go.kr/1360000/EqkInfoService/getEqkMsg';
 
@@ -16,12 +16,17 @@ db.on('error', log.error.bind(log));
 
 export default class EarthquakeClient extends EventEmitter {
   #key;
+
   #databaseURL;
+
   #discord;
+
   #telegram;
 
   constructor(option) {
-    const { discord, telegram, key, databaseURL } = option;
+    const {
+      discord, telegram, key, databaseURL,
+    } = option;
 
     super();
 
@@ -76,10 +81,11 @@ export default class EarthquakeClient extends EventEmitter {
         response = await this.#eqInfo();
         const data = new XMLParser().parse(response.data);
 
-        if (data.OpenAPI_ServiceResponse)
+        if (data.OpenAPI_ServiceResponse) {
           throw new Error(
-            JSON.stringify(data.OpenAPI_ServiceResponse, null, 4)
+            JSON.stringify(data.OpenAPI_ServiceResponse, null, 4),
           );
+        }
 
         if (data.response.header.resultCode !== 0) {
           if (data.response.header.resultCode === 3) return;
