@@ -63,6 +63,7 @@ export default class DiscordClient extends Client {
     this.on('guildCreate', async (guild) => {
       try {
         const channels = await (await guild.fetch()).channels.fetch();
+        // eslint-disable-next-line no-promise-executor-return
         const channel = await new Promise((resolve) => resolve(
           channels.find(
             (ch) => ch.type === 'GUILD_TEXT'
