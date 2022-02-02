@@ -10,7 +10,10 @@ const slashBuilder = new SlashCommandBuilder()
 function run(interaction) {
   if (
     !interaction.channel.permissionsFor(interaction.guild.me, 'SEND_MESSAGES')
-  ) { return interaction.reply('Channel permission error :('); }
+  ) {
+    interaction.reply('Channel permission error :(');
+    return;
+  }
   Setting.updateOne(
     { platform: 'discord', guild_id: interaction.guildId },
     { channel_id: interaction.channelId },

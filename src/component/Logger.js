@@ -6,7 +6,7 @@ export default class Logger {
   }
 
   #format(type, ctx) {
-    return `[${type}][${this.#client}][${Intl.DateTimeFormat('en-US', {
+    return `[${type}][${this.#client}][${Intl.DateTimeFormat('en-CA', {
       dateStyle: 'short',
       timeStyle: 'medium',
       hourCycle: 'h24',
