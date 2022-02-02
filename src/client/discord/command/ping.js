@@ -9,10 +9,17 @@ const slashBuilder = new SlashCommandBuilder()
 
 function run(interaction, client) {
   const uptime = os.uptime();
-  const formattedUptime = `${parseInt(uptime / 86400, 10)}d ${parseInt((uptime % 86400) / 3600, 10)}h ${parseInt((uptime % 3600) / 60, 10)}m`;
-  interaction.reply(`${os.cpus().length} Cores of CPU\nServer Uptime: ${formattedUptime}\nWebSocket ping: ${client.ws.ping}ms`);
+  const formattedUptime = `${parseInt(uptime / 86400, 10)}d ${parseInt(
+    (uptime % 86400) / 3600,
+    10
+  )}h ${parseInt((uptime % 3600) / 60, 10)}m`;
+  interaction.reply(
+    `${
+      os.cpus().length
+    } Cores of CPU\nServer Uptime: ${formattedUptime}\nWebSocket ping: ${
+      client.ws.ping
+    }ms`
+  );
 }
 
-export {
-  name, description, slashBuilder, run,
-};
+export { name, description, slashBuilder, run };

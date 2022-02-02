@@ -16,10 +16,8 @@ function run(interaction) {
   }
   Setting.updateOne(
     { platform: 'discord', guild_id: interaction.guildId },
-    { channel_id: interaction.channelId },
+    { channel_id: interaction.channelId }
   ).then(() => interaction.reply('Channel updated :D'));
 }
 
-export {
-  name, description, slashBuilder, run,
-};
+export { name, description, slashBuilder, run };

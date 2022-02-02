@@ -1,20 +1,26 @@
 import { Telegraf } from 'telegraf';
-import Setting from '../../db/model/setting.js';
-import Logger from '../../component/Logger.js';
+import path from 'path';
+import { readdir } from 'fs/promises';
+import Setting from '../../../db/model/setting.js';
+import Logger from '../../../component/Logger.js';
 
 const log = new Logger('client.telegram');
 
 export default class TelegramClient extends Telegraf {
   #id;
 
+  #commands;
+
   constructor(options) {
     super(options.option);
 
     this.#id = options.id;
+    this.#commands = new Map();
     this.catch(log.error.bind(log));
   }
 
   setup() {
+    this.#setupCommands();
     this.#setupEvents();
   }
 
@@ -27,13 +33,38 @@ export default class TelegramClient extends Telegraf {
     }
   }
 
+  #setupCommands() {
+    const cmdPath = path.join(
+      path.resolve(),
+      'src',
+      'client',
+      'telegram',
+      'command'
+    );
+
+    readdir(cmdPath)
+      .then((fileNames) =>
+        fileNames.forEach((fileName) =>
+          import(`../command/${fileName}`)
+            .then((cmd) => {
+              this.#commands.set(cmd.name, cmd);
+              this.command(cmd.name, cmd.run);
+            })
+            .catch(log.error.bind(log))
+        )
+      )
+      .catch(log.error.bind(log));
+  }
+
   #setupEvents() {
     this.start((ctx) => {
       ctx.reply('안녕하세요!');
     });
 
     this.on('new_chat_members', async (ctx) => {
-      if (String(ctx.update.message.new_chat_members[0].id) !== this.#id) return;
+      if (String(ctx.update.message.new_chat_members[0].id) !== this.#id) {
+        return;
+      }
       try {
         await Setting.create({
           platform: 'telegram',
@@ -50,7 +81,7 @@ export default class TelegramClient extends Telegraf {
       if (String(ctx.update.message.left_chat_member.id) !== this.#id) return;
       Setting.findOneAndDelete(
         { platform: 'telegram', channel_id: String(ctx.chat.id) },
-        log.error.bind(log),
+        log.error.bind(log)
       );
     });
   }
@@ -69,20 +100,22 @@ export default class TelegramClient extends Telegraf {
 
     Setting.find({ platform: 'telegram' }).then((chats) => {
       if (!chats) return;
-      chats.forEach((chat) => this.telegram.sendMessage(
-        chat.channel_id,
-        `${formattedDateStr.year}년 ${formattedDateStr.month}월 ${
-          formattedDateStr.day
-        }일 ${formattedDateStr.time.hour}시 ${
-          formattedDateStr.time.minute
-        }분 발표된 지진정보입니다.\n\n진앙 깊이: ${
-          values.dep || '정보없음'
-        }km\n위치: ${values.loc || '정보없음'}\n규모: ${
-          values.mt || '정보없음'
-        }\n진도: ${values.inT || '정보없음'}\n참고사항: ${
-          values.rem || '정보없음'
-        }\n데이터는 기상청 공공 API에서 제공받았습니다.`,
-      ));
+      chats.forEach((chat) =>
+        this.telegram.sendMessage(
+          chat.channel_id,
+          `${formattedDateStr.year}년 ${formattedDateStr.month}월 ${
+            formattedDateStr.day
+          }일 ${formattedDateStr.time.hour}시 ${
+            formattedDateStr.time.minute
+          }분 발표된 지진정보입니다.\n\n진앙 깊이: ${
+            values.dep || '정보없음'
+          }km\n위치: ${values.loc || '정보없음'}\n규모: ${
+            values.mt || '정보없음'
+          }\n진도: ${values.inT || '정보없음'}\n참고사항: ${
+            values.rem || '정보없음'
+          }\n데이터는 기상청 공공 API에서 제공받았습니다.`
+        )
+      );
     });
   }
 }

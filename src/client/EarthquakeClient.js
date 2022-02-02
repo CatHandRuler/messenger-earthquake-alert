@@ -2,7 +2,7 @@ import EventEmitter from 'events';
 import mongoose from 'mongoose';
 import axios from 'axios';
 import { XMLParser } from 'fast-xml-parser';
-import TelegramClient from './telegram/TelegramClient.js';
+import TelegramClient from './telegram/client/TelegramClient.js';
 import DiscordClient from './discord/client/DiscordClient.js';
 import Logger from '../component/Logger.js';
 
@@ -24,9 +24,7 @@ export default class EarthquakeClient extends EventEmitter {
   #telegram;
 
   constructor(option) {
-    const {
-      discord, telegram, key, databaseURL,
-    } = option;
+    const { discord, telegram, key, databaseURL } = option;
 
     super();
 
@@ -34,11 +32,6 @@ export default class EarthquakeClient extends EventEmitter {
     this.#databaseURL = databaseURL;
     this.#discord = new DiscordClient(discord);
     this.#telegram = new TelegramClient(telegram);
-
-    this.on('earthquake', (earthquake) => {
-      this.#discord.sendEarthquakeMessage(earthquake);
-      this.#telegram.sendEarthquakeMessage(earthquake);
-    });
   }
 
   #eqInfo() {
@@ -74,6 +67,11 @@ export default class EarthquakeClient extends EventEmitter {
   #setupEarthquakeEvents() {
     let eq = null;
 
+    this.on('earthquake', (earthquake) => {
+      this.#discord.sendEarthquakeMessage(earthquake);
+      this.#telegram.sendEarthquakeMessage(earthquake);
+    });
+
     setInterval(async () => {
       let response;
 
@@ -83,7 +81,7 @@ export default class EarthquakeClient extends EventEmitter {
 
         if (data.OpenAPI_ServiceResponse) {
           throw new Error(
-            JSON.stringify(data.OpenAPI_ServiceResponse, null, 4),
+            JSON.stringify(data.OpenAPI_ServiceResponse, null, 4)
           );
         }
 
@@ -95,7 +93,9 @@ export default class EarthquakeClient extends EventEmitter {
         const currentEq = data.response.body.items.item;
         if (!eq) {
           eq = currentEq.tmSeq;
-          log.info(`Initialized earthquake info, current earthquake info is: ${eq}`);
+          log.info(
+            `Initialized earthquake info, current earthquake info is: ${eq}`
+          );
           return;
         }
         if (eq !== currentEq.tmSeq) {
