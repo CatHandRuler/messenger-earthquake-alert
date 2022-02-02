@@ -68,7 +68,7 @@ export default class EarthquakeClient extends EventEmitter {
 
   launch() {
     this.#discord.login();
-    this.#telegram.start();
+    this.#telegram.launch();
   }
 
   #setupEarthquakeEvents() {

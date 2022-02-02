@@ -10,7 +10,7 @@ const client = new EarthquakeClient({
     id: process.env.DISCORD_ID,
   },
   telegram: {
-    option: { token: process.env.TELEGRAM_TOKEN },
+    option: process.env.TELEGRAM_TOKEN,
     id: process.env.TELEGRAM_ID,
   },
   key: process.env.EARTHQUAKE_API_KEY,
