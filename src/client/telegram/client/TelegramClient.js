@@ -11,12 +11,14 @@ export default class TelegramClient extends Telegraf {
 
   #commands;
 
-  constructor(options) {
+  constructor(options, earthquakeClient) {
     super(options.option);
 
     this.#id = options.id;
     this.#commands = new Map();
     this.catch(log.error.bind(log));
+
+    earthquakeClient.on('earthquake', this.#sendEarthquakeMessage);
   }
 
   setup() {
@@ -86,7 +88,7 @@ export default class TelegramClient extends Telegraf {
     });
   }
 
-  sendEarthquakeMessage(values) {
+  #sendEarthquakeMessage(values) {
     const dateStr = String(values.tmFc);
     const formattedDateStr = {
       year: dateStr.substring(0, 4),

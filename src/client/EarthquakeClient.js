@@ -30,8 +30,8 @@ export default class EarthquakeClient extends EventEmitter {
 
     this.#key = key;
     this.#databaseURL = databaseURL;
-    this.#discord = new DiscordClient(discord);
-    this.#telegram = new TelegramClient(telegram);
+    this.#discord = new DiscordClient(discord, this);
+    this.#telegram = new TelegramClient(telegram, this);
   }
 
   #eqInfo() {
@@ -66,11 +66,6 @@ export default class EarthquakeClient extends EventEmitter {
 
   #setupEarthquakeEvents() {
     let eq = null;
-
-    this.on('earthquake', (earthquake) => {
-      this.#discord.sendEarthquakeMessage(earthquake);
-      this.#telegram.sendEarthquakeMessage(earthquake);
-    });
 
     setInterval(async () => {
       let response;

@@ -15,12 +15,15 @@ export default class DiscordClient extends Client {
 
   #tokenSettedRest;
 
-  constructor(options) {
+  constructor(options, earthquakeClient) {
     super(options.option);
+
     this.token = options.token;
     this.#appID = options.id;
     this.#commands = new Collection();
     this.#tokenSettedRest = new REST({ version: 9 }).setToken(this.token);
+
+    earthquakeClient.on('earthquake', this.#sendEarthquakeMessage);
   }
 
   setup() {
@@ -115,7 +118,7 @@ export default class DiscordClient extends Client {
     });
   }
 
-  sendEarthquakeMessage(values) {
+  #sendEarthquakeMessage(values) {
     const dateStr = String(values.tmFc);
     const formattedDateStr = {
       year: dateStr.substring(0, 4),
