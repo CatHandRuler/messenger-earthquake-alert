@@ -29,6 +29,7 @@ export default class TelegramClient extends Telegraf {
   async launch() {
     try {
       await super.launch();
+
       log.info(`Logged in as client ${this.botInfo.username}`);
     } catch (e) {
       log.error(e);
@@ -67,12 +68,14 @@ export default class TelegramClient extends Telegraf {
       if (String(ctx.update.message.new_chat_members[0].id) !== this.#id) {
         return;
       }
+
       try {
         await Setting.create({
           platform: 'telegram',
           guild_id: null,
           channel_id: String(ctx.chat.id),
         });
+
         ctx.reply('안녕하세요! 이 봇을 추가해 주셔서 감사합니다!');
       } catch (e) {
         log.error(e);
@@ -81,6 +84,7 @@ export default class TelegramClient extends Telegraf {
 
     this.on('left_chat_member', async (ctx) => {
       if (String(ctx.update.message.left_chat_member.id) !== this.#id) return;
+
       Setting.findOneAndDelete(
         { platform: 'telegram', channel_id: String(ctx.chat.id) },
         log.error.bind(log)

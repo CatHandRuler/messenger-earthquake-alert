@@ -13,6 +13,7 @@ function run(interaction, client) {
     (uptime % 86400) / 3600,
     10
   )}h ${parseInt((uptime % 3600) / 60, 10)}m`;
+
   interaction.reply(
     `${
       os.cpus().length

@@ -14,6 +14,7 @@ function run(interaction) {
     interaction.reply('Channel permission error :(');
     return;
   }
+
   Setting.updateOne(
     { platform: 'discord', guild_id: interaction.guildId },
     { channel_id: interaction.channelId }

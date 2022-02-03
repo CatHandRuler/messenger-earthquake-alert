@@ -85,6 +85,7 @@ export default class DiscordClient extends Client {
             )
           )
         );
+
         await this.#tokenSettedRest.put(
           Routes.applicationGuildCommands(this.#appID, guild.id),
           {
@@ -96,6 +97,7 @@ export default class DiscordClient extends Client {
           guild_id: guild.id,
           channel_id: channel.id || null,
         });
+
         channel.send('안녕하세요! 이 봇을 추가해 주셔서 감사합니다!');
       } catch (e) {
         log.error(e);

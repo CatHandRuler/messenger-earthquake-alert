@@ -9,6 +9,7 @@ function run(ctx) {
     (uptime % 86400) / 3600,
     10
   )}h ${parseInt((uptime % 3600) / 60, 10)}m`;
+
   ctx.reply(
     `${os.cpus().length} Cores of CPU\nServer Uptime: ${formattedUptime}`
   );

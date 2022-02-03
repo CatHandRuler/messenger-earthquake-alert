@@ -18,6 +18,7 @@ const client = new EarthquakeClient({
 });
 
 log.info('process start');
+
 client.setup();
 client.launch();
 

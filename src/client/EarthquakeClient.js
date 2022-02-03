@@ -82,19 +82,23 @@ export default class EarthquakeClient extends EventEmitter {
 
         if (data.response.header.resultCode !== 0) {
           if (data.response.header.resultCode === 3) return;
+
           throw new Error(data.response.header.resultMsg);
         }
 
         const currentEq = data.response.body.items.item;
         if (!eq) {
           eq = currentEq.tmSeq;
+
           log.info(
             `Initialized earthquake info, current earthquake info is: ${eq}`
           );
+
           return;
         }
         if (eq !== currentEq.tmSeq) {
           eq = currentEq.tmSeq;
+
           this.emit('earthquake', currentEq);
         }
       } catch (e) {
