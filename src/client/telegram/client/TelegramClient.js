@@ -18,7 +18,7 @@ export default class TelegramClient extends Telegraf {
     this.#commands = new Map();
     this.catch(log.error.bind(log));
 
-    earthquakeClient.on('earthquake', this.#sendEarthquakeMessage);
+    earthquakeClient.on('earthquake', this.#sendEarthquakeMessage.bind(this));
   }
 
   setup() {

@@ -23,7 +23,7 @@ export default class DiscordClient extends Client {
     this.#commands = new Collection();
     this.#tokenSettedRest = new REST({ version: 9 }).setToken(this.token);
 
-    earthquakeClient.on('earthquake', this.#sendEarthquakeMessage);
+    earthquakeClient.on('earthquake', this.#sendEarthquakeMessage.bind(this));
   }
 
   setup() {
