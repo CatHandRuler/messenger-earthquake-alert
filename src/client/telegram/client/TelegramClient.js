@@ -75,10 +75,10 @@ export default class TelegramClient extends Telegraf {
 
     this.on('left_chat_member', async (ctx) => {
       if (String(ctx.update.message.left_chat_member.id) !== this.#id) return;
-      Setting.findOneAndDelete(
-        { platform: 'telegram', channel_id: String(ctx.chat.id) },
-        log.error.bind(log)
-      );
+      Setting.findOneAndDelete({
+        platform: 'telegram',
+        channel_id: String(ctx.chat.id),
+      });
     });
   }
 

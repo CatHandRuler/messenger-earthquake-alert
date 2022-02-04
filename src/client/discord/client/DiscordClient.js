@@ -99,10 +99,7 @@ export default class DiscordClient extends Client {
     });
 
     this.on('guildDelete', (guild) => {
-      Setting.findOneAndDelete(
-        { platform: 'discord', guild_id: guild.id },
-        log.error.bind(log)
-      );
+      Setting.findOneAndDelete({ platform: 'discord', guild_id: guild.id });
     });
 
     this.on('interactionCreate', (interaction) => {
