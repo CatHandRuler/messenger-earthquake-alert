@@ -21,22 +21,17 @@ export default class TelegramClient extends Telegraf {
     earthquakeClient.on('earthquake', this.#sendEarthquakeMessage.bind(this));
   }
 
-  setup() {
-    this.#setupCommands();
-    this.#setupEvents();
+  async setup() {
+    await this.#setupCommands();
+    return this.#setupEvents();
   }
 
   async launch() {
-    try {
-      await super.launch();
-
-      log.info(`Logged in as client ${this.botInfo.username}`);
-    } catch (e) {
-      log.error(e);
-    }
+    await super.launch();
+    log.info(`Logged in as client ${this.botInfo.username}`);
   }
 
-  #setupCommands() {
+  async #setupCommands() {
     const cmdPath = path.join(
       path.resolve(),
       'src',
@@ -45,18 +40,16 @@ export default class TelegramClient extends Telegraf {
       'command'
     );
 
-    readdir(cmdPath)
-      .then((fileNames) =>
-        fileNames.forEach((fileName) =>
-          import(`../command/${fileName}`)
-            .then((cmd) => {
-              this.#commands.set(cmd.name, cmd);
-              this.command(cmd.name, cmd.run);
-            })
-            .catch(log.error.bind(log))
-        )
-      )
-      .catch(log.error.bind(log));
+    const fileNames = await readdir(cmdPath);
+    const cmdModules = await Promise.all(
+      fileNames.map((fileName) => import(`../command/${fileName}`))
+    );
+
+    cmdModules.forEach(
+      (cmdModule) =>
+        this.#commands.set(cmdModule.name, cmdModule) &&
+        this.command(cmdModule.name, cmdModule.run.bind(this))
+    );
   }
 
   #setupEvents() {
@@ -92,7 +85,7 @@ export default class TelegramClient extends Telegraf {
     });
   }
 
-  #sendEarthquakeMessage(values) {
+  async #sendEarthquakeMessage(values) {
     const dateStr = String(values.tmFc);
     const formattedDateStr = {
       year: dateStr.substring(0, 4),
@@ -104,9 +97,10 @@ export default class TelegramClient extends Telegraf {
       },
     };
 
-    Setting.find({ platform: 'telegram' }).then((chats) => {
-      if (!chats) return;
-      chats.forEach((chat) =>
+    const chats = await Setting.find({ platform: 'telegram' });
+
+    await Promise.all(
+      chats.map((chat) =>
         this.telegram.sendMessage(
           chat.channel_id,
           `${formattedDateStr.year}년 ${formattedDateStr.month}월 ${
@@ -121,7 +115,7 @@ export default class TelegramClient extends Telegraf {
             values.rem || '정보없음'
           }\n데이터는 기상청 공공 API에서 제공받았습니다.`
         )
-      );
-    });
+      )
+    );
   }
 }
