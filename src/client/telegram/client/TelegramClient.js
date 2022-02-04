@@ -12,7 +12,7 @@ export default class TelegramClient extends Telegraf {
   #commands;
 
   constructor(options, earthquakeClient) {
-    super(options.option);
+    super(options.token, options.option);
 
     this.#id = options.id;
     this.#commands = new Map();
@@ -48,7 +48,7 @@ export default class TelegramClient extends Telegraf {
     cmdModules.forEach(
       (cmdModule) =>
         this.#commands.set(cmdModule.name, cmdModule) &&
-        this.command(cmdModule.name, cmdModule.run.bind(this))
+        this.command(cmdModule.name, cmdModule.run)
     );
   }
 
@@ -61,14 +61,12 @@ export default class TelegramClient extends Telegraf {
       if (String(ctx.update.message.new_chat_members[0].id) !== this.#id) {
         return;
       }
-
       try {
         await Setting.create({
           platform: 'telegram',
           guild_id: null,
           channel_id: String(ctx.chat.id),
         });
-
         ctx.reply('안녕하세요! 이 봇을 추가해 주셔서 감사합니다!');
       } catch (e) {
         log.error(e);
@@ -77,7 +75,6 @@ export default class TelegramClient extends Telegraf {
 
     this.on('left_chat_member', async (ctx) => {
       if (String(ctx.update.message.left_chat_member.id) !== this.#id) return;
-
       Setting.findOneAndDelete(
         { platform: 'telegram', channel_id: String(ctx.chat.id) },
         log.error.bind(log)
@@ -96,7 +93,6 @@ export default class TelegramClient extends Telegraf {
         minute: dateStr.substring(10, 12),
       },
     };
-
     const chats = await Setting.find({ platform: 'telegram' });
 
     await Promise.all(

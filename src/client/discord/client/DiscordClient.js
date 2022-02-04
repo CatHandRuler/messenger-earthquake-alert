@@ -64,7 +64,6 @@ export default class DiscordClient extends Client {
           )
         )
       );
-
       client.user.setActivity('Earthquake Alert', { type: 'LISTENING' });
       client.user.setStatus('online');
       log.info(`Logged in as client ${client.user.tag}`);
@@ -79,6 +78,7 @@ export default class DiscordClient extends Client {
             ch.viewable &&
             ch.permissionsFor(guild.me).has('SEND_MESSAGES')
         );
+
         await Promise.all([
           this.#tokenSettedRest.put(
             Routes.applicationGuildCommands(this.#appID, guild.id),
@@ -92,7 +92,6 @@ export default class DiscordClient extends Client {
             channel_id: channel.id || null,
           }),
         ]);
-
         channel.send('안녕하세요! 이 봇을 추가해 주셔서 감사합니다!');
       } catch (e) {
         log.error(e);
@@ -108,7 +107,6 @@ export default class DiscordClient extends Client {
 
     this.on('interactionCreate', (interaction) => {
       if (!interaction.isCommand) return;
-
       const command = this.#commands.get(interaction.commandName);
 
       command.run(interaction, this);

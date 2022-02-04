@@ -79,10 +79,8 @@ export default class EarthquakeClient extends EventEmitter {
             JSON.stringify(data.OpenAPI_ServiceResponse, null, 4)
           );
         }
-
         if (data.response.header.resultCode !== 0) {
           if (data.response.header.resultCode === 3) return;
-
           throw new Error(data.response.header.resultMsg);
         }
 
