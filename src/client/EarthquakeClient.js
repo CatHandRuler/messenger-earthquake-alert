@@ -86,6 +86,12 @@ export default class EarthquakeClient extends EventEmitter {
 
         const currentEq = data.response.body.items.item;
 
+        if (!eq) {
+          eq = currentEq.tmSeq;
+          log.info(
+            `Initialized earthquake info. current earthquake info is ${eq}.`
+          );
+        }
         if (eq !== currentEq.tmSeq) {
           eq = currentEq.tmSeq;
 
