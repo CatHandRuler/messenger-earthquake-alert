@@ -80,7 +80,11 @@ export default class EarthquakeClient extends EventEmitter {
           );
         }
         if (data.response.header.resultCode !== 0) {
-          if (data.response.header.resultCode === 3) return;
+          if (data.response.header.resultCode === 3) {
+            eq = 0;
+            log.info('No data, Initialized earthquake info to 0');
+            return;
+          }
           throw new Error(data.response.header.resultMsg);
         }
 
